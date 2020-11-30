@@ -8,6 +8,7 @@ const char* mqtt_server = "";
 const int LEDMATRIX_SEGMENTS = 4;
 const uint8_t LEDMATRIX_CS_PIN = D4;
 char text[4096];
+const char* initialText = "Ready, waiting for text via MQTT";
 
 uint16_t scrollDelay = 25;
 LEDMatrixDriver led(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN, 0);
@@ -15,58 +16,40 @@ uint16_t textIndex = 0;
 uint8_t colIndex = 0;
 uint16_t scrollWhitespace = 0;
 uint64_t marqueeDelayTimestamp = 0;
+uint64_t marqueeBlinkTimestamp;
+uint16_t blinkDelay = 0;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 void setup() {
-  int x = 0;
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  text[x++] = 'R';
-  text[x++] = 'e';
-  text[x++] = 'a';
-  text[x++] = 'd';
-  text[x++] = 'y';
-  text[x++] = ',';
-  text[x++] = ' ';
-  text[x++] = 'w';
-  text[x++] = 'a';
-  text[x++] = 'i';
-  text[x++] = 't';
-  text[x++] = 'i';
-  text[x++] = 'n';
-  text[x++] = 'g';
-  text[x++] = ' ';
-  text[x++] = 'f';
-  text[x++] = 'o';
-  text[x++] = 'r';
-  text[x++] = ' ';
-  text[x++] = 'i';
-  text[x++] = 'n';
-  text[x++] = 'p';
-  text[x++] = 'u';
-  text[x++] = 't';
-  text[x++] = ' ';
-  text[x++] = 'v';
-  text[x++] = 'i';
-  text[x++] = 'a';
-  text[x++] = ' ';
-  text[x++] = 'M';
-  text[x++] = 'Q';
-  text[x++] = 'T';
-  text[x++] = 'T';
-  text[x++] = '.';
-  text[x++] = '.';
-  text[x++] = '.';
+  for (int i = 0; i < sizeof(text); i++) {
+    text[i] = initialText[i];
+  }
   led.setIntensity(0);
   led.setEnabled(true);
 }
 
 void loop()
 {
+  if (blinkDelay) {
+    if (marqueeBlinkTimestamp > millis()) {
+      marqueeBlinkTimestamp > millis();
+    }
+    if (marqueeBlinkTimestamp + blinkDelay < millis()) {
+      led.setEnabled(false);
+      delay(1);
+      marqueeBlinkTimestamp = millis();
+    } else if (marqueeBlinkTimestamp + blinkDelay / 2 < millis()) {
+      led.setEnabled(true);
+      delay(1);
+    }
+
+  }
   marquee();
   if (!client.connected()) {
     reconnect();
@@ -126,6 +109,27 @@ void callback(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
+  if (!strcmp(topic, "ledMatrix/blink")) {
+    blinkDelay = 0;
+    for (int i = 0 ; i < length;  i++) {
+      blinkDelay *= 10;
+      blinkDelay += payload[i] - '0';
+    }
+    if (blinkDelay < 0) {
+      blinkDelay = 0;
+    }
+    if (blinkDelay > 10000) {
+      blinkDelay = 10000;
+    }
+    if (!blinkDelay) {
+      led.setEnabled(true);
+    } else {
+      marqueeBlinkTimestamp = millis();
+    }
+
+    return;
+  }
+
 
   if (!strcmp(topic, "ledMatrix/enable")) {
     led.setEnabled(payload[0] == '1');
@@ -176,6 +180,7 @@ void reconnect() {
       client.subscribe("ledMatrix/intensity");
       client.subscribe("ledMatrix/delay");
       client.subscribe("ledMatrix/text");
+      client.subscribe("ledMatrix/blink");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -345,8 +350,3 @@ void marquee()
   writeCol();
   led.display();
 }
-
-
-
-
-
