@@ -1,0 +1,288 @@
+<html>
+<head>
+    <title>MarQueTT Font-Editor</title>
+    <style>
+        table {
+            zoom: 150%;
+            background-color: #333;
+            padding: 5px;
+        }
+
+        td {
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #888;
+        }
+
+        td.active {
+            background-color: #dd1111;
+        }
+
+        #output {
+            width: 100%
+        }
+    </style>
+    <script
+            src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="
+            crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            let calc = function () {
+                $(this).toggleClass("active")
+                let leftTrim = $('#lefttrim').prop("checked")
+                let started = false;
+                let yOffset = 0;
+                let glyph = [];
+                for (let y = 1; y <= 24; y++) {
+                    if (leftTrim && !started && !$("td.led.active:nth-child(" + y + ")").length) {
+                        yOffset++;
+                        continue;
+                    }
+                    started = true;
+                    let g = 0;
+                    for (let x = 1; x <= 8; x++) {
+                        if ($("tr.led:nth-child(" + x + ")>td.led.active:nth-child(" + y + ")").length) {
+                            g += Math.pow(2, x - 1);
+                        }
+                    }
+                    glyph.push(g)
+                }
+                for (let i = glyph.length - 1; i; i--) {
+                    if (glyph[i]) break;
+                    glyph.pop();
+                }
+                glyph = glyph.map(function (i) {
+                    return "0b" + i.toString(2).padStart(8, '0')
+                })
+                glyph.unshift(glyph.length)
+                $('#output').val(glyph.join(", ") + ", ".padEnd(63, " "));
+            }
+            $('td').click(calc)
+            $('#lefttrim').change(calc)
+            $('#zoom').change(function () {
+                $('table').css("zoom", $(this).val() + "%")
+            })
+
+        })
+    </script>
+</head>
+<body>
+<table>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+    <tr class="led">
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+        <td class="led"></td>
+    </tr>
+</table>
+<br>
+<label>Zoom <input type="number" id="zoom" min="25" max="500" value="150"/></label><br>
+<label>Trim left <input type="checkbox" id="lefttrim"/></label><br>
+<input type="text" id="output" disabled>
+</body>
+</html>
+
