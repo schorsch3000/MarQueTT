@@ -1,17 +1,12 @@
 #include <LEDMatrixDriver.hpp>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include "local_config.h"
 
-const char* ssid = "";
-const char* password = "";
-const char* mqtt_server = "";
+uint8_t text[MAX_TEXT_LENGTH];
 
-const int LEDMATRIX_SEGMENTS = 8;
-const uint8_t LEDMATRIX_CS_PIN = D4;
-uint8_t text[4096];
-const char* initialText = "Ready, waiting for text via MQTT";
 
-uint16_t scrollDelay = 25;
+
 LEDMatrixDriver led(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN, 0);
 uint16_t textIndex = 0;
 uint8_t colIndex = 0;
@@ -28,7 +23,7 @@ void setup() {
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  client.setBufferSize(4096);
+  client.setBufferSize(MAX_TEXT_LENGTH);
   for (int i = 0; i < sizeof(text); i++) {
     text[i] = initialText[i];
   }
@@ -216,7 +211,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
         }
       } else if ((b & 0b111110000) == 0b11110000) {   // UTF-8 4-byte sequence_ starts with 0b11110xxx
         if (pr) Serial.println("UTF-8 (4)");
-                                                      // unknown, skip remaining 3 bytes
+        // unknown, skip remaining 3 bytes
         i += 3;
         text[j++] = 0x7f;                             // add checkerboard pattern
         text[j++] = 0x7f;                             // add checkerboard pattern
@@ -247,7 +242,7 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password, "ledMatrix/status", 1, true, "Offline")) {
       Serial.println("connected");
       client.subscribe("ledMatrix/enable");
       client.subscribe("ledMatrix/intensity");
@@ -368,8 +363,8 @@ static const uint8_t font[750] /*PROGMEM*/ = {
   0,                                                             /* 130 =  */
   0,                                                             /* 131 =  */
   0,                                                             /* 132 =  */
-  5, 0b01000000, 0b00000000, 0b01000000, 0b00000000, 0b01000000, /* 133 = 
- */
+  5, 0b01000000, 0b00000000, 0b01000000, 0b00000000, 0b01000000, /* 133 =
+*/
   0,                                                             /* 134 =  */
   0,                                                             /* 135 =  */
   0,                                                             /* 136 =  */

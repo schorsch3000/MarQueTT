@@ -2,6 +2,11 @@
 
 ## A MAX7221 LED-Matrix Scrolling Marquee controlled via MQTT
 
+### Configuration
+Copy `local_config.dist.h` to `local_config.h` and configure to your needs.
+`local_config.h` is ignored by git your secrets are safe there.
+
+
 ### MQTT Topics
 
 #### Subscribed by Marquee
