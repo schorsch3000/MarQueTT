@@ -4,9 +4,6 @@
 #include "local_config.h"
 
 uint8_t text[MAX_TEXT_LENGTH];
-
-
-
 LEDMatrixDriver led(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN, 0);
 uint16_t textIndex = 0;
 uint8_t colIndex = 0;
@@ -48,19 +45,13 @@ void loop()
       delay(1);
     }
   }
-  marquee();
+  loop_matrix();
   if (!client.connected()) {
     reconnect();
     client.publish("ledMatrix/status", "reconnect");
   }
   client.loop();
 }
-
-
-
-
-
-
 
 void setup_wifi() {
   delay(10);
@@ -75,8 +66,7 @@ void setup_wifi() {
   }
   randomSeed(micros());
   Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
+  Serial.print("WiFi connected - IP address: ");
   Serial.println(WiFi.localIP());
 }
 
@@ -112,8 +102,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
       scrollDelay *= 10;
       scrollDelay += payload[i] - '0';
     }
-    if (scrollDelay < 10) {
-      scrollDelay = 10;
+    if (scrollDelay == 0) {
+      textIndex = 0;
+    } else if (scrollDelay < 1) {
+      scrollDelay = 1;
     }
     if (scrollDelay > 1000) {
       scrollDelay = 1000;
@@ -260,7 +252,7 @@ void reconnect() {
 
 const uint16_t LEDMATRIX_WIDTH    = LEDMATRIX_SEGMENTS * 8;
 
-static const uint8_t font[750] /*PROGMEM*/ = {
+static const uint8_t font[] PROGMEM = {
   2, 0b00000000, 0b00000000,                                /* 032 =   */
   2, 0b01101111, 0b01101111,                                /* 033 = ! */
   3, 0b00000011, 0b00000000, 0b00000011,                    /* 034 = " */
@@ -278,7 +270,7 @@ static const uint8_t font[750] /*PROGMEM*/ = {
   2, 0b01100000, 0b01100000,                                /* 046 = . */
   5, 0b01000000, 0b00110000, 0b00001000, 0b00000110, 0b00000001, /* 047 = / */
   5, 0b00111110, 0b01010001, 0b01001001, 0b01000101, 0b00111110, /* 048 = 0 */
-  3, 0b01000010, 0b01111111, 0b01000000,                    /* 049 = 1 */
+  5, 0b00000000, 0b01000010, 0b01111111, 0b01000000, 0b00000000, /* 049 = 1 */
   5, 0b01000010, 0b01100001, 0b01010001, 0b01001001, 0b01000110, /* 050 = 2 */
   5, 0b00100001, 0b01000001, 0b01000101, 0b01001011, 0b00110001, /* 051 = 3 */
   5, 0b00011000, 0b00010100, 0b00010010, 0b01111111, 0b00010000, /* 052 = 4 */
@@ -363,8 +355,7 @@ static const uint8_t font[750] /*PROGMEM*/ = {
   0,                                                             /* 130 =  */
   0,                                                             /* 131 =  */
   0,                                                             /* 132 =  */
-  5, 0b01000000, 0b00000000, 0b01000000, 0b00000000, 0b01000000, /* 133 =
-*/
+  5, 0b01000000, 0b00000000, 0b01000000, 0b00000000, 0b01000000, /* 133 =  */
   0,                                                             /* 134 =  */
   0,                                                             /* 135 =  */
   0,                                                             /* 136 =  */
@@ -507,7 +498,7 @@ void calculate_font_index()
   int num_chars = 0;
   // 1st sweep: count chars
   while (fontptr < font + fontsize) {
-    int char_width = *fontptr;
+    int char_width = pgm_read_byte(fontptr); //*fontptr;
     fontptr += char_width + 1;  // add character X size
     num_chars++;
   }
@@ -517,22 +508,21 @@ void calculate_font_index()
   fontptr = (uint8_t*)font;
   for (int i = 0; i < num_chars; i++) {
     index[i] = fontptr - font;
-    int char_width = *fontptr;
+    int char_width = pgm_read_byte(fontptr); //*fontptr;
     //Serial.println((String)"idx " + i + " = " + (char)(i+32) + ": " + char_width + " -> " + index[i]);
     fontptr += char_width + 1;  // add character X size
   }
   font_index = index;
 }
 
-
-
 void nextChar()
 {
   if (text[++textIndex] == '\0')
   {
     textIndex = 0;
-    scrollWhitespace = LEDMATRIX_WIDTH;
-    client.publish("ledMatrix/status", "repeat");
+    scrollWhitespace = LEDMATRIX_WIDTH; // start over with empty display
+    if (scrollDelay)
+      client.publish("ledMatrix/status", "repeat");
   }
 }
 
@@ -553,7 +543,6 @@ void writeCol()
     scrollWhitespace--;
     return;
   }
-
   uint8_t asc = text[textIndex] - 32;
   uint16_t idx = pgm_read_word(&(font_index[asc]));
   uint8_t w = pgm_read_byte(&(font[idx]));
@@ -572,4 +561,38 @@ void marquee()
   led.scroll(LEDMatrixDriver::scrollDirection::scrollLeft);
   writeCol();
   led.display();
+}
+
+void loop_matrix()
+{
+  if (scrollDelay) {
+    marquee();
+  } else {
+    if (textIndex == 0) {   // start writing text to display (e.g. after text was changed)
+      Serial.println("display static text");
+      colIndex = 0;
+      marqueeDelayTimestamp = 0;
+      scrollWhitespace = 0;
+      led.clear();
+      uint8_t displayColumn = 0; // start left
+      while (displayColumn < LEDMATRIX_WIDTH) {
+        // write one column
+        uint8_t asc = text[textIndex] - 32;
+        uint16_t idx = pgm_read_word(&(font_index[asc]));
+        uint8_t w = pgm_read_byte(&(font[idx]));
+        uint8_t col = pgm_read_byte(&(font[colIndex + idx + 1]));
+        led.setColumn(displayColumn, col);
+        led.display();
+        displayColumn++;
+        if (++colIndex == w) {
+          displayColumn += 1;
+          colIndex = 0;
+          if (text[++textIndex] == '\0') {
+            return; // done
+            textIndex = 0;
+          }
+        }
+      }
+    }
+  }
 }
