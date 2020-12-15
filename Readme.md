@@ -13,13 +13,13 @@ Copy `local_config.dist.h` to `local_config.h` and configure to your needs.
 
 - ledMatrix/text: A UTF-8 coded text, max. 4096 bytes long.
 - ledMatrix/intensity: 0 = lowest, 15 = highest. Default: 1.
-- ledMatrix/delay: 10 = fastest, 1000 = slowest scrolling. Default: 25
+- ledMatrix/delay: 1 = fastest, 1000 = slowest scrolling. Default: 25, 0 for static text.
 - ledMatrix/blink: 0 = no blinking; 1 = fastest, 1000 = slowest blinking. Default: 0
 - ledMatrix/enable: 0 = display off, 1 = display on. Default: 1
 
 #### Published by Marquee
 
-- ledMatrix/status: startup, reconnect, repeat
+- ledMatrix/status: startup, reconnect, repeat, offline
 
 ### Wiring
 
