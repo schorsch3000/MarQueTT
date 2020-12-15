@@ -6,11 +6,11 @@
 
 #### Subscribed by Marquee
 
-- ledMatrix/text: A UTF-8 coded text, max. 4096 bytes long
-- ledMatrix/intensity: 0 = lowest, 15 = highest
-- ledMatrix/delay: 10 = fastest, 1000 = slowest scrolling
-- ledMatrix/blink: 0 = no blinking; 1 = fastest, 1000 = slowest blinking
-- ledMatrix/enable: 0 = display off, 1 = display on
+- ledMatrix/text: A UTF-8 coded text, max. 4096 bytes long.
+- ledMatrix/intensity: 0 = lowest, 15 = highest. Default: 1.
+- ledMatrix/delay: 10 = fastest, 1000 = slowest scrolling. Default: 25
+- ledMatrix/blink: 0 = no blinking; 1 = fastest, 1000 = slowest blinking. Default: 0
+- ledMatrix/enable: 0 = display off, 1 = display on. Default: 1
 
 #### Published by Marquee
 
